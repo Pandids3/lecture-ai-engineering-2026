@@ -7,6 +7,7 @@
 import json
 from functools import cache
 from pathlib import Path
+from datetime import datetime, timezone
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 MAX_RESULTS = 3
@@ -77,3 +78,49 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+def make_quiz(lecture: int) -> str:
+    """Create one review question from a glossary term in the requested lecture.
+
+    Use this tool when the learner asks for a practice or review question.
+    The argument is a one-based lecture number, such as 2 for Lecture 2.
+    """
+    terms = [term for term in load_glossary() if term["lecture"] == lecture]
+
+    if not terms:
+        available = sorted({term["lecture"] for term in load_glossary()})
+        return (
+            f"No glossary terms were found for Lecture {lecture}. "
+            f"Available lectures: {available}"
+        )
+
+    term = terms[0]
+
+    return json.dumps(
+        {
+            "question": f'What does “{term["term"]}” mean?',
+            "answer": term["definition"],
+        },
+        ensure_ascii=False,
+    )
+
+def save_learning_log(topic: str, reflection: str) -> str:
+    """Save a learner's reflection in the learning_log directory.
+
+    Use this tool when the learner explicitly asks to save a learning
+    record. The record must include a topic and a reflection.
+    """
+    log_dir = DATA_DIR.parent / "learning_log"
+    log_dir.mkdir(exist_ok=True)
+
+    log_path = log_dir / "learning_log.jsonl"
+    record = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "topic": topic,
+        "reflection": reflection,
+    }
+
+    with log_path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    return f"Saved learning record to {log_path}"
