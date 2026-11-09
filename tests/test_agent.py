@@ -40,3 +40,16 @@ def test_glossary_result_reaches_the_model():
         result = agent.run_sync("RAGとは？")
     returns = _parts(result, ToolReturnPart)
     assert returns and returns[0].tool_name == "search_glossary"
+
+
+def test_learning_log_requires_approval():
+    model = TestModel(call_tools=["save_learning_log"])
+
+    with agent.override(model=model):
+        result = agent.run_sync(
+            "Save a learning record about LoRA."
+        )
+
+    assert isinstance(result.output, DeferredToolRequests)
+    assert len(result.output.approvals) == 1
+    assert result.output.approvals[0].tool_name == "save_learning_log"
