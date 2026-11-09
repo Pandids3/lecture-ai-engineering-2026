@@ -1,19 +1,19 @@
-# 第2回 解答
+# Session 2 Submission
 
-## 演習
+## Practice
 
-- 使ったモデル・設定（`result.json` の `config` から）：
-- 自分で学習を実行したか（`executed_training_myself`）：はい / いいえ（実行できた範囲：　）
-- 学習前：`format_rate` =　 / `content_rate` =　
-- 学習後：`format_rate` =　 / `content_rate` =　
-- 退行した質問：
-- 学習後に残った失敗と、その型（根拠なしの質問に断定した / 根拠ありの質問に確認要求で逃げた / 形式の崩れ）：
-- 知識を問う質問（セクション 6）の結果（学習前の分類 → 学習後の分類）と気づいたこと：
-- 学習で変わったこと・変わらなかったこと：
+- Model and configuration used (from `result.json` → `config`):
+- Did I run the training myself (`executed_training_myself`): yes / no (what I was able to run: )
+- Before training: `format_rate` = / `content_rate` =
+- After training: `format_rate` = / `content_rate` =
+- Regressed questions:
+- Remaining failures after training and their type (asserted for an unsupported question / requested review for a supported question / malformed format):
+- Knowledge-question results from section 6 (classification before → classification after) and observations:
+- What changed and what did not change after training:
 
-## 宿題
+## Homework
 
-- 取り組んだレベル：基礎 / 実装 / 発展
-- 変えた設定やデータ：
-- 結果（比較表や数字）：
-- ファインチューニングが向く場面・向かない場面についての考察：
+- Level completed: Basic / Implementation / Advanced
+- Configuration or data changed:
+- Results (comparison table or figures):
+- Reflection on when fine-tuning is and is not appropriate:
