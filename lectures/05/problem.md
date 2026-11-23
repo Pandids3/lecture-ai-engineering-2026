@@ -1,34 +1,34 @@
-# 第5回 演習・宿題：講義資料を検索して回答する
+# Lecture 5 Exercise and Homework: Answering Questions with Retrieved Lecture Materials
 
-## この回のゴール
+## Learning objectives
 
-- 全文投入と検索を使った回答を動かし、答え・根拠・時間・トークン数を比べられる
-- 1ページを1チャンクとして持つデータと、ベクトル検索・Tree・Graphの取得方法の違いを説明できる
-- 自分の用途に合わせて取得方法を改良し、同じ質問で変更前後を確かめられる
+- Run full-context and retrieval-based answering, and compare answers, supporting evidence, time, and token usage.
+- Explain the page-based chunk structure and the differences between vector retrieval, Tree, and Graph.
+- Adapt a retrieval method to your needs and compare its behavior before and after a change using the same questions.
 
-第3回の「モデル＋ループ＋ツール」という形を使い、講義資料を取得する方法を変えます。第4回の評価を踏まえ、回答の正しさと引用したページの根拠を、自分で確認します。
+This exercise builds on the model + loop + tools structure from Lecture 3 by changing how lecture materials are retrieved. Applying the evaluation principles from Lecture 4, check both the correctness of the answer and whether the cited pages actually support it.
 
-## 使う資料とコード
+## Materials and code
 
-| ファイル | 内容 |
+| File | Purpose |
 |---|---|
-| [data/rag_data/lectures.json](../../data/rag_data/lectures.json) | 講義・章・ページごとのタイトルと本文。1ページを1チャンクとして使う |
-| [data/rag_data/tree.json](../../data/rag_data/tree.json) | 資料・章・ページの階層 |
-| [data/rag_data/graph.json](../../data/rag_data/graph.json) | ページ・用語などのノードと、それらを結ぶ関係 |
-| [data/rag_data/index.sqlite3](../../data/rag_data/index.sqlite3) | 第1〜3回の本講義214ページを収めた検索DB |
-| [scripts/build_rag_index.py](../../scripts/build_rag_index.py) | 資料を埋め込み、検索用SQLite DBを作成する |
-| [app/retrieval.py](../../app/retrieval.py) | ベクトル検索・Tree探索・Graph探索・全文投入の処理 |
-| [app/tools.py](../../app/tools.py) | モデルが使うツールの説明と入出力 |
-| [app/agent.py](../../app/agent.py) | 指示文、ツールの登録、実行モードの切り替え |
-| [app/config.py](../../app/config.py) | 対象資料、検索件数、Graphの探索範囲などの設定 |
+| [data/rag_data/lectures.json](../../data/rag_data/lectures.json) | Titles and text organized by lecture, section, and page. Each page is one chunk. |
+| [data/rag_data/tree.json](../../data/rag_data/tree.json) | The document, section, and page hierarchy. |
+| [data/rag_data/graph.json](../../data/rag_data/graph.json) | Page and term nodes, together with their relationships. |
+| [data/rag_data/index.sqlite3](../../data/rag_data/index.sqlite3) | The search database containing 214 pages from the main materials for Lectures 1–3. |
+| [scripts/build_rag_index.py](../../scripts/build_rag_index.py) | Creates document embeddings and builds the SQLite search database. |
+| [app/retrieval.py](../../app/retrieval.py) | Vector retrieval, Tree traversal, Graph traversal, and full-context processing. |
+| [app/tools.py](../../app/tools.py) | Tool descriptions, inputs, and outputs exposed to the model. |
+| [app/agent.py](../../app/agent.py) | Instructions, tool registration, and execution modes. |
+| [app/config.py](../../app/config.py) | Settings for document scope, result counts, and Graph traversal. |
 
-**現在の対象範囲**：ベクトル検索・Tree・Graphは第1〜3回の本講義214ページを使います。全文投入は教材JSONにある全9資料・438ページを使います。この演習では取得経路の違いを観察します。方式の優劣を同じ条件で比較するときは、先に対象資料をそろえてください。
+**Current document scope:** Vector retrieval, Tree, and Graph use the 214 pages of the main materials for Lectures 1–3. Full context uses all nine documents and 438 pages in the materials JSON. This exercise examines different retrieval paths. Before drawing conclusions about which method performs better under equivalent conditions, align their document coverage.
 
-## 事前準備
+## Preparation
 
-### 1. 第5回の更新を取り込み、lec05ブランチを作る
+### 1. Incorporate the Lecture 5 update and create the lec05 branch
 
-講座リポジトリの第5回の更新が公開された後、自分のforkで **Sync fork → Update branch** を押し、Codespacesのターミナルで実行します。
+After the Lecture 5 update is published in the course repository, select **Sync fork → Update branch** in your own fork, then run the following in the Codespaces terminal:
 
 ```bash
 git switch main
@@ -37,162 +37,162 @@ git switch -c lec05
 uv sync --frozen
 ```
 
-- すでに`lec05`がある場合は、`git switch lec05`で切り替えます
-- 前の回の変更が残っていて切り替えられない場合は、そのブランチでcommitしてから再実行します
-- 更新時に衝突が出た場合は、自分の変更を捨てずに講師へ確認してください
+- If `lec05` already exists, switch to it with `git switch lec05`.
+- If uncommitted changes from an earlier lecture prevent switching branches, commit those changes on their current branch before trying again.
+- If updating produces merge conflicts, preserve your changes and consult the instructor.
 
-APIキーは第1回と同じ環境変数`GEMINI_API_KEY`を使います。Codespacesのsecretを後から登録した場合は、Codespacesを再起動してください。設定方法は[README](../../README.md)を参照してください。
+Use the same `GEMINI_API_KEY` environment variable as in Lecture 1. If you added the Codespaces secret after starting the Codespace, restart it. See the [README](../../README.md) for setup instructions.
 
-### 2. 同梱の検索DBを確認する
+### 2. Check the included search database
 
-ベクトル検索とGraphは、同梱の`data/rag_data/index.sqlite3`をそのまま使います。第5回の更新を取り込んだら、演習に進んでください。質問の埋め込みと回答生成には`GEMINI_API_KEY`を使います。Treeと全文投入には検索DBは不要です。
+Vector retrieval and Graph use the supplied `data/rag_data/index.sqlite3` directly. Once the Lecture 5 update is incorporated, proceed to the exercise. Query embeddings and answer generation require `GEMINI_API_KEY`. Tree and full context do not require the search database.
 
-## 演習
+## Exercise
 
-### STEP 1：資料を一度に渡して回答させる
+### STEP 1: Answer using all materials at once
 
-まず、同じターミナルで比較用の質問を変数に入れます。以下の各方式では、この質問をそのまま使います。
+First, assign the comparison question to a variable in the terminal. Reuse this exact question for each method below.
 
 ```bash
-AIE_QUESTION='第2回の説明では、LoRAは何を固定し何を学習しますか？ QLoRAは何を加えますか？'
+AIE_QUESTION='According to Lecture 2, what does LoRA keep fixed, what does it train, and what does QLoRA add?'
 uv run python -m app.agent --full-context --trace "$AIE_QUESTION"
 ```
 
-回答と引用ページ、末尾の`[time]`・`[usage]`・`[cost]`を[answer.md](answer.md)に記録します。
+Record the answer, cited pages, and the final `[time]`, `[usage]`, and `[cost]` values in [answer.md](answer.md).
 
-全文投入でも正しく答えられることがあります。失敗することを前提にせず、実際の結果を見てください。入力上限を超えるエラーと、入力できたが必要な根拠を使えない現象は分けて記録します。
+Full context may answer correctly. Examine the actual result rather than assuming it will fail. Distinguish an input-limit error from a case in which the input is accepted but the model fails to use the necessary evidence.
 
-### STEP 2：検索結果だけを確認する
+### STEP 2: Inspect retrieval results independently
 
 ```bash
-uv run python -m app.retrieval "LoRA QLoRA 違い"
+uv run python -m app.retrieval "LoRA QLoRA differences"
 ```
 
-エージェントを使わず、質問に近いページを最大5件取得します。講義名・章・ページタイトル・PDFページ番号・本文が表示されます。
+This retrieves pages similar to the query without running the agent. The original configuration returns up to five results; the actual limit is controlled by `RAG_TOP_K`. Each result includes the lecture title, section, page title, PDF page number, and text.
 
-- 第2回・PDF p.52など、質問への答えを支えるページが含まれていますか
-- 単に似た用語が出ているページと、答えの根拠になるページを区別できますか
+- Do the results include a page that supports the answer, such as Lecture 2, PDF p. 52?
+- Can you distinguish pages that merely contain related terminology from pages that provide the required evidence?
 
-教材JSONをエディタで開き、たとえば`lec02-main-p052`を探すと、該当ページの本文を確認できます。
+Open the materials JSON in the editor and search for an identifier such as `lec02-main-p052` to inspect the corresponding page text.
 
-### STEP 3：検索結果を使って回答させる
+### STEP 3: Answer using retrieved materials
 
 ```bash
 uv run python -m app.agent --trace "$AIE_QUESTION"
 ```
 
-通常の起動では、`search_materials(query)`を持つエージェントが回答します。モデルが検索語を決め、返された本文を使って答えます。
+The normal execution mode uses an agent with `search_materials(query)`. The model chooses the search terms and answers using the returned text.
 
-- `[tool call]`で、検索語とツールの呼び出し回数を確認します
-- 回答に付いた「第N回・PDF p.N」が、説明の根拠になっているか確認します
-- 根拠が取れていなかったのか、取れた根拠を正しく使えなかったのかを分けて考えます
+- Inspect `[tool call]` entries to identify the search terms and number of tool calls.
+- Check whether each citation in the form "Lecture N, PDF p. N" supports the associated explanation.
+- Distinguish failure to retrieve evidence from failure to use evidence that was retrieved.
 
-必要な根拠がp.52だけでそろう質問もあります。参照ページ数を増やすこと自体を目標にしないでください。
+For some questions, p. 52 alone provides sufficient evidence. Increasing the number of cited pages is not an objective in itself.
 
-### STEP 4：TreeとGraphで同じ質問に答えさせる
+### STEP 4: Answer the same question with Tree and Graph
 
-Treeは目次をたどってページを選びます。
+Tree selects pages by following the table of contents.
 
 ```bash
 uv run python -m app.agent --tree --trace "$AIE_QUESTION"
 ```
 
-`browse_tree(node_id)`だけを使います。最初は講義一覧を取得し、返されたIDで講義・章・ページへ進みます。`children`のページには本文の先頭文だけが入り、ページIDを指定すると`node.content`に全文が入ります。句点のないページの候補文は先頭行です。traceで、選んだ目次と全文を取得したページを確認します。
+It uses only `browse_tree(node_id)`. The agent first obtains the lecture list, then follows returned identifiers through lectures, sections, and pages. Page candidates in `children` contain only the first sentence of the page text. Passing a page identifier returns the complete text in `node.content`. When a page has no sentence-ending punctuation recognized by the implementation, its candidate text is the first line. Inspect the trace to see the selected sections and the pages whose full text was retrieved.
 
-Graphはベクトル検索で入口を見つけ、その周囲へ候補を広げます。
+Graph begins with vector search and expands the surrounding candidates.
 
 ```bash
 uv run python -m app.agent --graph --trace "$AIE_QUESTION"
 ```
 
-`search_graph(query)`を使います。検索上位3ページを入口に、前後ページ・共通用語の関係を最大2 hopたどり、入口を含め最大10ページの本文を返します。ページから隣のページなら1 hop、ページから用語を経由して別のページへ進むと2 hopです。共通用語があっても、答えがあるとは限らない点に注意してください。
+It uses `search_graph(query)`. The top three search results serve as starting pages. The method follows adjacent-page and shared-term relationships for up to two hops and returns the text of at most ten pages, including the starting pages. Moving directly to an adjacent page is one hop; moving from a page through a term to another page is two hops. Sharing a term does not guarantee that a page contains the answer.
 
-TreeとGraphで、回答・引用根拠・時間・入力トークン数がどう変わるかを記録します。
+Record how Tree and Graph affect the answer, supporting citations, elapsed time, and input token usage.
 
-### STEP 5：結果を比べて記録する
+### STEP 5: Compare and record the results
 
-`answer.md`の表に各方式の結果をまとめます。
+Summarize the results for each method in the table in `answer.md`.
 
-| 表示 | 意味 |
+| Output | Meaning |
 |---|---|
-| `[time]` | 検索・埋め込みを含む、回答完了までの秒数 |
-| `[usage]` | 1つの質問で使った入力・出力トークン数と、モデル応答回数の合計 |
-| `[cost]` | 生成APIの推定費用。クエリの埋め込みと索引構築分は含まない |
+| `[time]` | Seconds until the answer is complete, including retrieval and embedding. |
+| `[usage]` | Total input tokens, output tokens, and model responses for one question. |
+| `[cost]` | Estimated generation API cost. Query embeddings and index construction are excluded. |
 
-費用が「算定不可」の場合はそのまま記録し、0として扱わないでください。
+If the cost cannot be calculated, record it as unavailable rather than zero.
 
-余裕があれば、質問を変えて同じ比較を試します。複数の質問をまとめる場合は、質問ごとに結果を残してください。
+If time permits, repeat the comparison with other questions. Keep separate results for each question.
 
-| 種類 | 質問の例 | 確認する根拠 |
+| Type | Example question | Evidence to check |
 |---|---|---|
-| 複数ページ | 第3回の例では、コンパクションとセッションをまたぐメモリはどう違いますか。日々のメモはすべて長期メモリに入りますか | 第3回・PDF p.13、39、40 |
-| 資料にない | 今回作ったRAGの実測平均応答時間と正答率を教えてください | 講義資料には今回のシステムの実測ログがない |
+| Multiple pages | In the Lecture 3 examples, how does compaction differ from memory across sessions? Are all daily notes transferred to long-term memory? | Lecture 3, PDF pp. 13, 39, and 40. |
+| Not in the materials | What are the measured average response time and accuracy of the RAG system built in this exercise? | The lecture materials do not contain measurement logs for this system. |
 
-### STEP 6：提出して、Codespacesを停止する
+### STEP 6: Submit your work and stop Codespaces
 
-演習の結果を`lectures/05/answer.md`に書き、作業ブランチから自分のforkの`main`へPRを出します。**base repositoryが自分のforkになっていることを確認してください。**
+Write your exercise results in `lectures/05/answer.md` and open a PR from your working branch to `main` in your own fork. **Verify that the PR's base repository is your own fork.**
 
 ```bash
 git add lectures/05/answer.md
-# コードを変更した場合は、そのファイルも git add する
-git commit -m "第5回 演習・宿題"
+# Also stage any code files you changed.
+git commit -m "Complete Lecture 5 exercise and homework"
 git push -u origin lec05
 ```
 
-APIキーや実験用の検索DBはcommitの対象から外してください。最後に、左下の「Codespaces」から **Stop Current Codespace** を選んで停止します。
+Do not commit API keys or experimental search databases. Finally, select **Stop Current Codespace** from the Codespaces menu in the lower-left corner.
 
-## 宿題（どれか1つで完了）
+## Homework: complete any one level
 
-基礎・実装・発展から1つ選びます。**どれか1つに取り組めば完了です。** 演習と同じ`answer.md`の「宿題」欄に、レベル・やったこと・結果・気づきや疑問を書いてください。
+Choose Basic, Implementation, or Advanced. **Completing any one level satisfies the homework requirement.** In the Homework section of the same `answer.md`, state the selected level, what you changed, the results, and your observations or questions.
 
-| レベル | 内容 |
+| Level | Task |
 |---|---|
-| 基礎 | 指示文・ツールの説明・検索件数のどれか1つを変更し、同じ質問を`--trace`付きで実行して変更前後を比べる |
-| 実装 | 検索結果に前後ページの本文も付けるなど、取得処理を1つ改良し、通常の検索と比べる |
-| 発展 | Tree・Graphやそれらの組合せを自分で改良する。解きたい質問を決め、基本RAGと同じ質問で比べる |
+| Basic | Change one instruction, tool description, or retrieval result count. Run the same question with `--trace` and compare the behavior before and after the change. |
+| Implementation | Improve one retrieval step, such as including the full text of adjacent pages, and compare it with ordinary retrieval. |
+| Advanced | Improve Tree, Graph, or a combination of methods. Define the questions you want to answer and compare your method with Basic RAG using the same questions. |
 
-### 基礎の進め方
+### Basic level
 
-次のどれかを一度に1か所だけ変更します。
+Change only one of the following at a time:
 
-- `app/agent.py`の`INSTRUCTIONS`。Tree・Graphを使う場合は、それぞれ`TREE_INSTRUCTIONS`・`GRAPH_INSTRUCTIONS`
-- `app/tools.py`のツールのdocstring
-- `app/config.py`の`RAG_TOP_K`（通常のベクトル検索で返す件数）
+- `INSTRUCTIONS` in `app/agent.py`. When using Tree or Graph, use `TREE_INSTRUCTIONS` or `GRAPH_INSTRUCTIONS`, respectively.
+- A tool's docstring in `app/tools.py`.
+- `RAG_TOP_K` in `app/config.py`, which controls the number of results returned by ordinary vector retrieval.
 
-同じ質問・モデル・資料を使い、ツールの呼ばれ方・引数・回数、回答と引用根拠の変化を確認します。時間・トークン数・生成API推定費用も記録してください。これらの変更だけなら索引の再作成は不要です。
+Keep the questions, model, and source materials identical. Compare the tools called, their arguments and call counts, the answers, and their supporting citations. Also record time, token usage, and estimated generation API cost. These changes alone do not require rebuilding the index.
 
-### 実装の進め方
+### Implementation level
 
-たとえば`app/retrieval.py`で、検索したページの前後1ページの本文も返すように改良します。
+For example, modify `app/retrieval.py` to return the full text of one page before and after each retrieved page.
 
-1. `load_pages()`のページ情報を使い、検索結果と同じ`document_id`の中から前後のページを探します
-2. 同じページを重複して返さないようにし、本文と引用情報を一緒に返します
-3. 変更前と同じ質問で実行し、必要な根拠を追加できた例と、不要な情報が増えた例を確認します
-4. 実装した内容、比較結果、残る失敗を記録します
+1. Use the page information from `load_pages()` to find adjacent pages with the same `document_id` as the search result.
+2. Avoid returning duplicate pages, and include both the text and citation information.
+3. Use the same questions as before the change. Identify cases where the modification adds necessary evidence and cases where it adds irrelevant information.
+4. Record the implementation, comparison results, and remaining failures.
 
-自分の用途に合わせた別の取得処理の改良でもかまいません。本文や埋め込みの設定を変えず、取得する範囲だけを変える場合は、索引の再作成は不要です。
+Other retrieval improvements suited to your intended use are also acceptable. If you change only the retrieval range without changing the document text or embedding settings, the index does not need to be rebuilt.
 
-教材本文や埋め込み設定を変える場合は、[READMEの手順](../../README.md#第5回講義資料を検索する)に沿って、`AIE_RAG_DB`で実験用のDBを指定してから索引を作ります。
+If you change the document text or embedding settings, follow the [README instructions](../../README.md#第5回講義資料を検索する), set `AIE_RAG_DB` to an experimental database path, and then build the index.
 
-### 発展の進め方
+### Advanced level
 
-1. 解けるようにしたい質問を決めます。章をまたぐ説明や関連用語の比較など、答えを支えるページを先に確認します
-2. 取得方法を設計します。例として、Treeの目次・候補文の返し方、Graphの関係の種類・hop数・候補の選び方、複数の取得方法の組合せがあります
-3. データの形・持ち方・検索方法を、選んだ理由と一緒に説明します
-4. 基本RAGと同じ質問・モデル・対象資料で比べます。回答と引用根拠、時間・トークン数・生成API推定費用を記録します
-5. 改善した例と失敗した例を挙げ、自分の用途に採用するかを考察します
+1. Define the questions you want the system to answer. For example, choose explanations spanning sections or comparisons between related terms. Identify the supporting pages in advance.
+2. Design the retrieval method. Options include changing how Tree returns the table of contents or candidate text, changing Graph relationship types, hop limits, or candidate selection, or combining retrieval methods.
+3. Explain the data structure, storage, and retrieval method, together with your reasons for choosing them.
+4. Compare with Basic RAG using the same questions, model, and document scope. Record the answers, supporting citations, time, token usage, and estimated generation API cost.
+5. Include examples of improvements and failures, and discuss whether you would adopt the method for your intended use.
 
-AIツールは使ってかまいません。自分で実行して確かめたことを書いてください。締切は講座の案内に従ってください。
+AI tools are permitted. Report what you actually executed and verified. Follow the course announcements for the submission deadline.
 
-## うまくいかないとき
+## Troubleshooting
 
-| 症状 | 確認すること |
+| Symptom | What to check |
 |---|---|
-| `GEMINI_API_KEY`が見つからない | Codespacesのsecretを登録したか。後から登録した場合はCodespacesを再起動したか |
-| 「検索DBがありません」 | 第5回の更新を取り込み、`data/rag_data/index.sqlite3`があるか確認する。`AIE_RAG_DB`を設定した場合は指定先を確認する |
-| APIのレート制限に達した | 表示メッセージに従って待ってから再実行する |
-| 質問が空だと言われる | 別のターミナルを開いた場合は`AIE_QUESTION`をもう一度設定する |
-| 検索結果が質問に答えていない | `app.retrieval`で検索だけを試し、検索語・対象資料・返す件数を確認する |
-| 全文投入で入力上限のエラーになる | エラーと実行条件を記録し、他の方式を試す。未実行の欄はその旨を書く |
+| `GEMINI_API_KEY` is missing | Check that the Codespaces secret is configured. Restart Codespaces if the secret was added after startup. |
+| The search database is missing | Incorporate the Lecture 5 update and check that `data/rag_data/index.sqlite3` exists. If `AIE_RAG_DB` is set, check the specified path. |
+| The API rate limit is reached | Wait as instructed by the message, then try again. |
+| The question is reported as empty | If you opened another terminal, set `AIE_QUESTION` again in that terminal. |
+| Retrieved results do not answer the question | Run retrieval independently with `app.retrieval`, and check the search terms, document scope, and result count. |
+| Full context exceeds the input limit | Record the error and execution conditions, then try the other methods. Clearly mark any unexecuted results. |
 
-同じ質問でも結果は変わることがあります。1回の成功・失敗だけで方式全体の優劣を決めず、どの根拠を取得して使ったかを確認しましょう。
+The same question can produce different results across runs. Avoid judging an entire method from one success or failure. Check which evidence was retrieved and how it was used.
