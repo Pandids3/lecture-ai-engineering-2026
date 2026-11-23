@@ -77,19 +77,3 @@ The committed value of 3 is the evaluated homework variant. These observations d
 Retrieval replays in the evidence JSON files are explicitly labelled independent diagnostics. They inspect complete page text because the CLI abbreviates tool returns. They are not captures of the original tool-return payloads, and their API calls are excluded from recorded agent timings and generation costs. The source and index were unchanged during these checks.
 
 The main lesson is to evaluate context across the entire interaction. Reducing the text returned by one search can increase the number of searches and model responses needed to produce a grounded answer.
-
-### Reproduction and validation
-
-Configure the existing `GEMINI_API_KEY` environment variable and run from the repository root:
-
-```bash
-uv sync --frozen
-uv run python -m app.agent --list-tools
-uv run python -m app.agent --trace "According to Lecture 2, which weights does LoRA keep fixed, what does it train, and what does QLoRA add? Answer in English and cite the lecture PDF pages."
-uv run pytest -q
-git diff --check
-```
-
-For the before/after comparison, run each exact question above with `RAG_TOP_K = 5`, then change only that setting to 3 and repeat. Keep documents and model unchanged. For the exercise comparison, use the Q1 command with `--full-context`, `--tree`, or `--graph` before changing the setting. The JSON files preserve the actual questions, flags, configuration, CLI output, exit status, and replayed retrieval results.
-
-Validation completed with **22 tests passing**, successful Python syntax checks for the integration changes, and no whitespace errors. The tool listing confirmed preservation of the earlier tools and the learning-log approval requirement. AI assistance was used to integrate the course update, execute the experiments, inspect evidence, and prepare this report. Every numerical result above comes from a recorded execution.
