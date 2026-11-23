@@ -1,0 +1,55 @@
+{
+  "condition": "k3",
+  "question_id": "q1",
+  "question": "According to Lecture 2, which weights does LoRA keep fixed, what does it train, and what does QLoRA add? Answer in English and cite the lecture PDF pages.",
+  "mode_flags": [],
+  "configuration_top_k": 3,
+  "started_or_recorded_at_utc": "2026-11-23T01:18:05.244227+00:00",
+  "exit_code": 0,
+  "stdout": "[model] gemini-3.5-flash-lite\nAccording to Lecture 2:\n\n* **LoRA keeps fixed:** The original model weights ($W$), which are not updated or trained (Lecture 2, PDF p. 52).\n* **LoRA trains:** Small additional matrices ($A$ and $B$) that represent the changes (or \"diff\") through low-rank matrix multiplication (Lecture 2, PDF p. 51–52).\n* **QLoRA adds:** Compressing the original weights into 4-bit (making them rougher to save memory) in addition to the LoRA approach (Lecture 2, PDF p. 51–52).\n\n--- trace ---\n[tool call]   search_materials({'query': 'LoRA QLoRA weights'})\n[tool return] search_materials -> {\"results\": [{\"page_id\": \"lec02-main-p052\", \"document_id\": \"lec02-main\", \"lecture\": 2, \"document_title\": \"基盤モデルの仕組み\", \"s…\n[time] 回答完了まで 4.92 秒（検索・埋め込みを含む）\n[usage] 入力 2,885 tokens / 出力 156 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.001256 USD（埋め込み・索引構築分は含まない）\n",
+  "stderr": "                 pydantic-ai v2.57.0 • Python 3.13.1\n\n      / \\        agent: target • model: google:gemini-3.5-flash-lite\n     /   \\         output: str | DeferredToolRequests • tools: 5 • capabilities: 0\n   /___.___\\\n  /    |    \\    observability: off — see every model and tool call live, with cost\n/      |      \\    set it up free with Logfire and a GitHub login: https://pydantic.dev/ai-setup.md\n`---.._|_..---'    or use any OpenTelemetry backend: https://pydantic.dev/docs/ai/logfire/#otel\n\n                 goes away once observability is on — or PYDANTIC_AI_NO_BANNER=1\n",
+  "retrieval_replay": {
+    "note": "Independent replay of the traced search queries to inspect complete page text; these diagnostic API calls are excluded from the recorded agent time and generation cost.",
+    "searches": [
+      {
+        "tool": "search_materials",
+        "query": "LoRA QLoRA weights",
+        "results": [
+          {
+            "page_id": "lec02-main-p052",
+            "document_id": "lec02-main",
+            "lecture": 2,
+            "document_title": "基盤モデルの仕組み",
+            "section": "選んだモデルを、いつ・どう直すか",
+            "title": "LoRA と QLoRA ：大きなモデルも GPU 1 台で調整できる",
+            "page": 52,
+            "content": "4/4 　選んだモデルを、いつ・どう直すか\nLoRA と QLoRA ：大きなモデルも GPU 1 台で調整できる\n元の重みは固定し、小さな「差分」だけを学習する（ LoRA ）。さらに元の重みを 4bit に圧縮する（ QLoRA ）\n出典： E. J. Hu et al. 「 LoRA 」（ ICLR 2022 ）／ T. Dettmers et al. 「 QLoRA 」（ NeurIPS 2023 ）。演習では transformers ・ peft ・ bitsandbytes ・ TRL を使用\nLoRA （ Hu et al. Fig.1 ）： A と B だけを学習する\n青：元の重み W\n固定して学習しない。 QLoRA では\n4bit （数値を粗く保存）にして\n約 1/4 。 7B なら約 4GB\n橙：小さな行列 A ・ B\nこれだけを学習。細長い 2 つの\n行列の積で、変化分を表す（低ランク）\nイメージ\n本体はそのままに、薄い「付箋」を\n書き足す。学習するのは全体の\n1% 未満にもできる\n650 億\nパラメータのモデルを\n48GB GPU 1 台\nで微調整（ QLoRA 論文）\n• Colab の GPU （例： 16GB ）でも、\n数十億パラメータ級なら調整できる。今日の\n演習はこれ\n• データの準備・評価・運用の手間は別にかかる\n© Matsuo-Iwasawa Lab, The University of Tokyo 52\n\n【図表・画像内の補足文字起こし】\nLoRA図：Pretrained Weights W ∈ R^(d×d)、x、h、A ~ N(0, σ²)、B = 0、d、r。",
+            "distance": 0.2797222137451172
+          },
+          {
+            "page_id": "lec02-main-p051",
+            "document_id": "lec02-main",
+            "lecture": 2,
+            "document_title": "基盤モデルの仕組み",
+            "section": "選んだモデルを、いつ・どう直すか",
+            "title": "PEFT ：モデル全体ではなく、一部だけを学習する",
+            "page": 51,
+            "content": "4/4 　選んだモデルを、いつ・どう直すか\nPEFT ：モデル全体ではなく、一部だけを学習する\n全パラメータを更新する FT は重い。少数のパラメータだけを学習する方法（ PEFT ）が主流になった\n出典：各手法の原論文（ Houlsby+ 2019 ／ Li & Liang 2021 ／ Lester+ 2021 ／ Hu+ 2022 ）。 Hugging Face PEFT ライブラリで利用可能\nどこを学習するか（ Dettmers et al. Fig.1 ）\nFull Fine-Tuning\n全パラメータを更新。メモリも保存容量も大きい\nLoRA\n本体は固定し、小さな追加部分だけ更新\nQLoRA\nさらに本体を 4bit に圧縮して省メモリ\nPEFT の主な方法\nアダプタ\n層の間に小さな層を差し込み、そこだけ学習\nHoulsby et al. 2019\nプレフィックス／プロンプトチューニング\n入力の前に学習できる「仮想トークン」を付ける\nLi & Liang 2021 ／ Lester et al. 2021\nLoRA\n重みの変化を、細長い 2 つの小さな行列の積（低ランク）で表して学習\nHu et al. 2022 　← 現在最も広く使われる\nQLoRA\nLoRA ＋元の重みを 4bit に圧縮。さらに少ないメモリで\nDettmers et al. 2023 　← 次のスライド\n© Matsuo-Iwasawa Lab, The University of Tokyo 51\n\n【図表・画像内の補足文字起こし】\n比較図：Full Finetuning (No Adapters)／LoRA／QLoRA。Optimizer、Adapters、16-bit Transformer、4-bit Transformer。",
+            "distance": 0.31015217304229736
+          },
+          {
+            "page_id": "lec02-main-p060",
+            "document_id": "lec02-main",
+            "lecture": 2,
+            "document_title": "基盤モデルの仕組み",
+            "section": "選んだモデルを、いつ・どう直すか",
+            "title": "今日の演習： QLoRA で出力形式を矯正し、効果を測る",
+            "page": 60,
+            "content": "演習\n今日の演習： QLoRA で出力形式を矯正し、効果を測る\n事前宿題（ Colab ＋ FastAPI ＋ ngrok での API 化、温度による揺れの観察）の続きから\n準備\n事前宿題で詰まった点を\n解消する\n前を測る\n形式遵守率を測る（同じ\n温度で複数回）\nQLoRA で学習\n形式を守った手本で\n微調整する\n後を測る\nFT 後のモデルに\n差し替え、同じ質問で\n測る\n対照：知識の質問\n変わらないはず。\n変わったら評価を疑う\n形式遵守率＝ JSON として読み込め、決めた項目（ answer ・ slide ・ confidence ）がそろった回答の割合。「直った」は、前後で\n同じ評価をして初めて言える\n© Matsuo-Iwasawa Lab, The University of Tokyo 60",
+            "distance": 0.3459732234477997
+          }
+        ]
+      }
+    ]
+  }
+}
