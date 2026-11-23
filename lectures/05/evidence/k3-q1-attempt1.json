@@ -1,0 +1,15 @@
+{
+  "condition": "k3",
+  "question_id": "q1",
+  "question": "According to Lecture 2, which weights does LoRA keep fixed, what does it train, and what does QLoRA add? Answer in English and cite the lecture PDF pages.",
+  "mode_flags": [],
+  "configuration_top_k": 3,
+  "started_or_recorded_at_utc": "2026-11-23T01:16:48.200216+00:00",
+  "exit_code": 1,
+  "stdout": "[model] gemini-3.5-flash-lite\nモデルが混み合っています（503）。少し待ってから再実行してください。\n",
+  "stderr": "                 pydantic-ai v2.57.0 • Python 3.13.1\n\n      / \\        agent: target • model: google:gemini-3.5-flash-lite\n     /   \\         output: str | DeferredToolRequests • tools: 5 • capabilities: 0\n   /___.___\\\n  /    |    \\    observability: off — see every model and tool call live, with cost\n/      |      \\    set it up free with Logfire and a GitHub login: https://pydantic.dev/ai-setup.md\n`---.._|_..---'    or use any OpenTelemetry backend: https://pydantic.dev/docs/ai/logfire/#otel\n\n                 goes away once observability is on — or PYDANTIC_AI_NO_BANNER=1\n",
+  "retrieval_replay": {
+    "note": "Independent replay of the traced search queries to inspect complete page text; these diagnostic API calls are excluded from the recorded agent time and generation cost.",
+    "searches": []
+  }
+}

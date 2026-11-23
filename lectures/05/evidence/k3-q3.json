@@ -1,0 +1,55 @@
+{
+  "condition": "k3",
+  "question_id": "q3",
+  "question": "What were the measured average response time and accuracy of our RAG system in today's experiments? Answer in English using only the lecture materials.",
+  "mode_flags": [],
+  "configuration_top_k": 3,
+  "started_or_recorded_at_utc": "2026-11-23T01:17:42.495667+00:00",
+  "exit_code": 0,
+  "stdout": "[model] gemini-3.5-flash-lite\nBased on the lecture materials, there is no mention of the measured average response time or accuracy of a RAG system in today's experiments. The materials only mention that evaluating a RAG system requires asking the same question multiple times to see the average and variation, rather than relying on a single trial (第2回・PDF p.13). Therefore, this cannot be confirmed from the lecture materials.\n\n--- trace ---\n[tool call]   search_materials({'query': 'response time accuracy RAG system experiments'})\n[tool return] search_materials -> {\"results\": [{\"page_id\": \"lec02-main-p013\", \"document_id\": \"lec02-main\", \"lecture\": 2, \"document_title\": \"基盤モデルの仕組み\", \"s…\n[time] 回答完了まで 7.19 秒（検索・埋め込みを含む）\n[usage] 入力 2,928 tokens / 出力 104 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.001138 USD（埋め込み・索引構築分は含まない）\n",
+  "stderr": "                 pydantic-ai v2.57.0 • Python 3.13.1\n\n      / \\        agent: target • model: google:gemini-3.5-flash-lite\n     /   \\         output: str | DeferredToolRequests • tools: 5 • capabilities: 0\n   /___.___\\\n  /    |    \\    observability: off — see every model and tool call live, with cost\n/      |      \\    set it up free with Logfire and a GitHub login: https://pydantic.dev/ai-setup.md\n`---.._|_..---'    or use any OpenTelemetry backend: https://pydantic.dev/docs/ai/logfire/#otel\n\n                 goes away once observability is on — or PYDANTIC_AI_NO_BANNER=1\n",
+  "retrieval_replay": {
+    "note": "Independent replay of the traced search queries to inspect complete page text; these diagnostic API calls are excluded from the recorded agent time and generation cost.",
+    "searches": [
+      {
+        "tool": "search_materials",
+        "query": "response time accuracy RAG system experiments",
+        "results": [
+          {
+            "page_id": "lec02-main-p013",
+            "document_id": "lec02-main",
+            "lecture": 2,
+            "document_title": "基盤モデルの仕組み",
+            "section": "LLM は、確率で次の言葉を選ぶ",
+            "title": "帰結①：同じ質問でも、答えは毎回変わる",
+            "page": 13,
+            "content": "1/4 　 LLM は確率で次の言葉を選ぶ\n帰結①：同じ質問でも、答えは毎回変わる\n1 回試して「動いた」は評価にならない。同じ質問を複数回聞いて、ばらつきごと測る\n例：「 RAG って何ですか？」を 5 回聞く（説明用）　右端：✓正しい 誤り ！不十分✗\n1 質問に関係する資料を検索し、それを根拠に回答を作る方法です\n2\n外部の文書を検索して、 LLM への入力に加えてから答えさせる\n仕組みです\n3 検索（ Retrieval ）で知識を補いながら文章を生成する手法です\n4 モデルを追加学習して、新しい知識を覚えさせる方法です\n5 検索した資料を要約して表示する機能です\n5 回中\n3 回 正しい\n• 1 回目だけ見れば「完璧」でも、実際の\n正答率は分からない\n• 評価は同じ質問を複数回。平均とばらつきを\n見る（第 4 回）\n• 温度を下げる・根拠資料を渡すなどで、\n揺れは減らせる\n© Matsuo-Iwasawa Lab, The University of Tokyo 13",
+            "distance": 0.3339799642562866
+          },
+          {
+            "page_id": "lec02-main-p024",
+            "document_id": "lec02-main",
+            "lecture": 2,
+            "document_title": "基盤モデルの仕組み",
+            "section": "渡す・選ぶ／直す／考えさせる",
+            "title": "事後学習の前と後：同じ質問でも、ふるまいが変わる",
+            "page": 24,
+            "content": "2/4 　渡す・選ぶ／直す／考えさせる\n事後学習の前と後：同じ質問でも、ふるまいが変わる\n事前学習だけのモデルは「文章の続き」を書く。事後学習で「質問に答える」ようになる\n出典：図： L. Ouyang et al. 「 Training language models to follow instructions with human feedback （ InstructGPT ）」 NeurIPS 2022 Fig.2 。左の例は説明用\n考えてみよう：事前学習だけのモデルは、何を返す？（説明用の例）\n入力： RAG って何ですか？\n事前学習だけのモデル\nRAG って何ですか？　 RAG と LLM の違いは？　 RAG の\n実装方法は？……\n→ よくある質問集の「続き」を書いてしまう\n事後学習の後\nRAG とは、質問に関係する資料を検索し、それを根拠に回答を\n作る方法です。\nInstructGPT の 3 段階：手本 → 人の順位付け → 強化学習\n人の好み評価で、 13 億パラメータの InstructGPT が\n1750 億パラメータの GPT-3 より好まれた\n知識が増えたのではなく「答え方」の差 → 直す価値がある\n© Matsuo-Iwasawa Lab, The University of Tokyo 24\n\n【図表・画像内の補足文字起こし】\nInstructGPT図の工程：Step 1 Collect demonstration data, and train a supervised policy. Step 2 Collect comparison data, and train a reward model. Step 3 Optimize a policy against the reward model using reinforcement learning.",
+            "distance": 0.352773517370224
+          },
+          {
+            "page_id": "lec03-main-p064",
+            "document_id": "lec03-main",
+            "lecture": 3,
+            "document_title": "AIエージェント",
+            "section": "Appendix",
+            "title": "補足：長時間タスクの実行能力の最新動向",
+            "page": 64,
+            "content": "補足：長時間タスクの実行能力の最新動向\nMETR の測定では、公開モデルの最前線の 50% 時間地平は約12時間（2026年2〜3月）。16時間を超える値は、現行の課題群\nでは信頼できない。\n何が変わったか\n項目 更新内容 時点\n50% 時間地平 公開モデルの最前線で約12時間（推定の幅 5〜61時間）。半分の確率で完了できる課\n題の、人間の所要時間で表した長さ\n2026/2〜3 の評価\n80% 時間地平 同じ時点で約1.5時間（推定の幅 50分〜2時間40分）。求める成功率を上げると、任\nせられる長さは大きく縮む\n2026/2〜3 の評価\n測定の限界 GPT-5.6 Sol の推定は約11.3時間。不正な解法を成功に数えると270時間超になり、\nMETR は頑健な測定ではないとした\n2026/6/26\n講義の内容との関係。本編の「1回95%でも20回続くと約36%」は説\n明用の計算。実測でも、50% と 80% の差は大きい。長く動かせるこ\nとと、確実に終えることは別である。\n使うときの注意。時間地平は課題の長さの指標で、連続して稼働でき\nる時間ではない。Claude Opus 5.5 の評価要約（2026/9/22）に、時\n間地平の数値は載っていない。\n出典）METR「Frontier Risk Report (February to March 2026)」（2026/5/19）、「Summary of METR's predeployment evaluation of GPT-5.6 Sol」（2026/6/26）\n、「Task-Completion Time Horizons of Frontier AI Models」（2026/5/8 更新）。情報確認日：2026/10/9\n©MATSUO-IWASAWA LAB, THE UNIVERSITY OF TOKYO",
+            "distance": 0.3528919517993927
+          }
+        ]
+      }
+    ]
+  }
+}
